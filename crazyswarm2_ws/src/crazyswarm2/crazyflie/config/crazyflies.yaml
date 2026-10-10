@@ -7,15 +7,15 @@ robots:
 
   cf_2:
     enabled: false
-    uri: udp://127.0.0.1:19851
-    initial_position: [1.0, 0.0, 0.0]
-    type: cf_sim  # see robot_types
+    uri: radio://0/80/2M/E7E7E7E702
+    initial_position: [0.0, 0.0, 0.0]
+    type: cf21_mocap_deck
 
   cf_3:
-    enabled: false
-    uri: udp://127.0.0.1:19852
-    initial_position: [0.0, 1.0, 0.0]
-    type: cf_sim  # see robot_types
+    enabled: true
+    uri: radio://0/80/2M/E7E7E7E703
+    initial_position: [0.0, 0.0, 0.0]
+    type: cf21_mocap_deck
 
   cf_4:
     enabled: false
