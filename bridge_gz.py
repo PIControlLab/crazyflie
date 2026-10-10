@@ -213,7 +213,7 @@ def main():
 
                 if not ev.wait(timeout=2.0):
                     print("  [bridge] WARN: no pose after step")
-                time.sleep(0.02)
+                time.sleep(0.05)
 
                 send_msg(conn, {"type": "step_done"})
 
