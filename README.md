@@ -16,6 +16,13 @@
 
 ## 2. 安装配置
 
+### 2.0 ros依赖
+
+```bash
+sudo apt install ros-jazzy-gz-plugin-vendor ros-jazzy-gz-sim-vendor ros-jazzy-gz-transport-vendor ros-jazzy-gz-msgs-vendor ros-jazzy-tf-transformations
+sudo apt install ros-jazzy-vrpn
+```
+
 ### 2.1 Python 虚拟环境
 
 ```bash
@@ -27,18 +34,24 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 pip install "empy<4" -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 2.2 编译 SITL 固件
+### 2.2 ROS2 环境
+```bash
+sudo apt install ros-jazzy-ros-gz
+sudo apt install ros-jazzy-vrpn
+sudo apt install ros-jazzy-tf-transformations
+```
+
+### 2.3 编译 SITL 固件
 
 ```bash
 cd ~/crazyflie/crazyflie_sim
 source ~/crazyflie/.venv/bin/activate
-export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v anaconda | tr '\n' ':')
 mkdir -p sitl_make/build && cd sitl_make/build
 cmake ..
 make -j"$(nproc)" all
 ```
 
-### 2.3 ROS 工作区构建
+### 2.4 ROS 工作区构建
 
 ```bash
 cd ~/crazyflie/crazyswarm2_ws
@@ -94,12 +107,35 @@ pkill -f ros2
 
 ## 其他说明
 
-### CrazyStdio进行转发
+### WSL：CrazyStdio进行转发
 sudo apt install linux-tools-virtual hwdata
 sudo update-alternatives --install /usr/local/bin/usbip usbip /usr/lib/linux-tools/*/usbip 20
 sudo usbip list -r 10.1.1.14
 sudo usbip attach -r 10.1.1.14 -b 1-9
 sudo modprobe vhci_hcd
 
-### 从Nat模式配置为Bridged模式
+从Nat模式配置为Bridged模式
 networkingMode=bridged
+
+### 真机：Crazyradio 权限
+
+没加 udev 规则会报 `Access denied (insufficient permissions)`，加完拔插电台：
+
+```bash
+echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="1915", ATTRS{idProduct}=="7777", MODE="0664", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/99-crazyradio.rules
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+连通性检查（URI 换成 `crazyflies.yaml` 里启用的那台，打印 `OK` 即通）：
+
+```bash
+python -c "
+import time, cflib.crtp; cflib.crtp.init_drivers()
+from cflib.crazyflie import Crazyflie
+cf = Crazyflie(rw_cache=None)
+cf.connected.add_callback(lambda u: print('OK', u))
+cf.connection_failed.add_callback(lambda u, m: print('FAIL', m))
+cf.open_link('radio://0/80/2M/E7E7E7E703'); time.sleep(5)"
+```
+
+真机后端用 `mocap:=true`，且不要与 SITL 同时运行。
